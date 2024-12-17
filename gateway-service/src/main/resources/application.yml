@@ -1,0 +1,55 @@
+server:
+  port: 8000
+
+spring:
+  application:
+    name: gateway-service
+  cloud:
+    gateway:
+      routes:
+        - id: auth-service
+          uri: lb://AUTH-SERVICE
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - RewritePath=/api/auth/(?<segment>.*), /$\{segment}
+
+        - id: sensor-service
+          uri: lb://SENSOR-SERVICE
+          predicates:
+            - Path=/api/sensors/**
+          filters:
+            - RewritePath=/api/sensors/(?<segment>.*), /$\{segment}
+            - AuthenticationFilter
+
+        - id: statistics-service
+          uri: lb://STATISTICS-SERVICE
+          predicates:
+            - Path=/api/statistics/**
+          filters:
+            - RewritePath=/api/statistics/(?<segment>.*), /$\{segment}
+            - AuthenticationFilter
+
+        - id: alarm-service
+          uri: lb://ALARM-SERVICE
+          predicates:
+            - Path=/api/alarms/**
+          filters:
+            - RewritePath=/api/alarms/(?<segment>.*), /$\{segment}
+            - AuthenticationFilter
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    fetch-registry: true
+    register-with-eureka: true
+
+jwt:
+  secret: your-256-bit-secret-key-here-minimum-32-characters
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
